@@ -558,7 +558,7 @@ class StringMerger(StringTransformer, CustomSplitMapMixin):
 
         S_leaf = Leaf(token.STRING, S)
         if self.normalize_strings:
-            S_leaf.value = normalize_string_quotes(S_leaf.value)
+            S_leaf.value = normalize_string_quotes(S_leaf.value, line.mode.single_quotes)
 
         # Fill the 'custom_splits' list with the appropriate CustomSplit objects.
         temp_string = S_leaf.value[len(prefix) + 1 : -1]
@@ -1374,7 +1374,7 @@ class StringSplitter(BaseStringSplitter, CustomSplitMapMixin):
             # --- Construct `next_leaf`
             next_leaf = Leaf(token.STRING, next_value)
             insert_str_child(next_leaf)
-            self._maybe_normalize_string_quotes(next_leaf)
+            self._maybe_normalize_string_quotes(next_leaf, line.mode.single_quotes)
 
             # --- Construct `next_line`
             next_line = line.clone()
@@ -1396,7 +1396,7 @@ class StringSplitter(BaseStringSplitter, CustomSplitMapMixin):
         # NOTE: I could not find a test case that verifies that the following
         # line is actually necessary, but it seems to be. Otherwise we risk
         # not normalizing the last substring, right?
-        self._maybe_normalize_string_quotes(rest_leaf)
+        self._maybe_normalize_string_quotes(rest_leaf, line.mode.single_quotes)
 
         last_line = line.clone()
         maybe_append_string_operators(last_line)
@@ -1572,9 +1572,9 @@ class StringSplitter(BaseStringSplitter, CustomSplitMapMixin):
 
         return break_idx
 
-    def _maybe_normalize_string_quotes(self, leaf: Leaf) -> None:
+    def _maybe_normalize_string_quotes(self, leaf: Leaf, prefer_single_quotes: bool = False) -> None:
         if self.normalize_strings:
-            leaf.value = normalize_string_quotes(leaf.value)
+            leaf.value = normalize_string_quotes(leaf.value, prefer_single_quotes=prefer_single_quotes)
 
     def _normalize_f_string(self, string: str, prefix: str) -> str:
         """

@@ -178,6 +178,7 @@ class Mode:
     python_cell_magics: Set[str] = field(default_factory=set)
     preview: bool = False
     use_tabs: bool = False
+    single_quotes: bool = False
 
     def __post_init__(self) -> None:
         if self.experimental_string_processing:
@@ -220,5 +221,6 @@ class Mode:
             str(int(self.preview)),
             sha256((",".join(sorted(self.python_cell_magics))).encode()).hexdigest(),
             str(int(self.use_tabs)),
+            str(int(self.single_quotes)),
         ]
         return ".".join(parts)

@@ -131,7 +131,7 @@ class LineGenerator(Visitor[Line]):
             normalize_prefix(node, inside_brackets=any_open_brackets)
             if self.mode.string_normalization and node.type == token.STRING:
                 node.value = normalize_string_prefix(node.value)
-                node.value = normalize_string_quotes(node.value)
+                node.value = normalize_string_quotes(node.value, self.mode.single_quotes)
             if node.type == token.NUMBER:
                 normalize_numeric_literal(node)
             if node.type not in WHITESPACE:
@@ -342,7 +342,7 @@ class LineGenerator(Visitor[Line]):
                     # formatting as visit_default() is called *after*. To avoid a
                     # situation where this function formats a docstring differently on
                     # the second pass, normalize it early.
-                    docstring = normalize_string_quotes(docstring)
+                    docstring = normalize_string_quotes(docstring, self.mode.single_quotes)
                 else:
                     docstring = leaf.value
             else:

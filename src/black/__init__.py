@@ -289,6 +289,13 @@ def validate_regex(
     ),
 )
 @click.option(
+    "--single-quotes",
+    is_flag=True,
+    help=(
+        "Prefer single quotes instead of double quotes for strings."
+    ),
+)
+@click.option(
     "--check",
     is_flag=True,
     help=(
@@ -448,6 +455,7 @@ def main(  # noqa: C901
     experimental_string_processing: bool,
     preview: bool,
     use_tabs: bool,
+    single_quotes: bool,
     quiet: bool,
     verbose: bool,
     required_version: Optional[str],
@@ -553,6 +561,7 @@ def main(  # noqa: C901
         preview=preview,
         python_cell_magics=set(python_cell_magics),
         use_tabs=use_tabs,
+        single_quotes=single_quotes,
     )
 
     if code is not None:

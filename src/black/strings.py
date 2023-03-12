@@ -167,25 +167,27 @@ def _cached_compile(pattern: str) -> Pattern[str]:
     return re.compile(pattern)
 
 
-def normalize_string_quotes(s: str) -> str:
-    """Prefer double quotes but only if it doesn't cause more escaping.
+def normalize_string_quotes(s: str, prefer_single_quotes: bool = False) -> str:
+    """Prefer either double or single quotes but only if it doesn't cause more escaping.
 
     Adds or removes backslashes as appropriate. Doesn't parse and fix
     strings nested in f-strings.
     """
+    q = "'" if prefer_single_quotes else '"' # preferred style
+    nq = '"' if prefer_single_quotes else "'" # non-preferred style
     value = s.lstrip(STRING_PREFIX_CHARS)
-    if value[:3] == '"""':
+    if value[:3] == f"{q}{q}{q}":
         return s
 
-    elif value[:3] == "'''":
-        orig_quote = "'''"
-        new_quote = '"""'
-    elif value[0] == '"':
-        orig_quote = '"'
-        new_quote = "'"
+    elif value[:3] == f"{nq}{nq}{nq}":
+        orig_quote = f"{nq}{nq}{nq}"
+        new_quote = f"{q}{q}{q}"
+    elif value[0] == f"{q}":
+        orig_quote = f"{q}"
+        new_quote = f"{nq}"
     else:
-        orig_quote = "'"
-        new_quote = '"'
+        orig_quote = f"{nq}"
+        new_quote = f"{q}"
     first_quote_pos = s.find(orig_quote)
     if first_quote_pos == -1:
         return s  # There's an internal error
@@ -227,15 +229,15 @@ def normalize_string_quotes(s: str) -> str:
                 # Do not introduce backslashes in interpolated expressions
                 return s
 
-    if new_quote == '"""' and new_body[-1:] == '"':
+    if new_quote == f"{q}{q}{q}" and new_body[-1:] == f"{q}":
         # edge case:
-        new_body = new_body[:-1] + '\\"'
+        new_body = new_body[:-1] + f"\\{q}"
     orig_escape_count = body.count("\\")
     new_escape_count = new_body.count("\\")
     if new_escape_count > orig_escape_count:
         return s  # Do not introduce more escaping
 
-    if new_escape_count == orig_escape_count and orig_quote == '"':
-        return s  # Prefer double quotes
+    if new_escape_count == orig_escape_count and orig_quote == f"{q}":
+        return s  # Leave preferred style
 
     return f"{prefix}{new_quote}{new_body}{new_quote}"
